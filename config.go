@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	kafkaBrokerList   = "kafka:9092"
+	kafkaBrokerList   = "127.0.0.1:9092"
 	kafkaTopic        = "metrics"
 	basicauth         = false
 	basicauthUsername = ""
@@ -39,7 +39,7 @@ var (
 func init() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
-
+	logrus.SetLevel(logrus.WarnLevel)
 	if value := os.Getenv("LOG_LEVEL"); value == "" {
 		logrus.SetLevel(parseLogLevel(value))
 	}

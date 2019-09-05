@@ -22,10 +22,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/golang/snappy"
-
-	"github.com/gogo/protobuf/proto"
-	"github.com/prometheus/prometheus/prompb"
 )
 
 func receiveHandler(producer *kafka.Producer, serializer Serializer) func(c *gin.Context) {
@@ -39,40 +35,52 @@ func receiveHandler(producer *kafka.Producer, serializer Serializer) func(c *gin
 			logrus.WithError(err).Error("couldn't read body")
 			return
 		}
+		// 发送信息到kafka
+		err = producer.Produce(&kafka.Message{
+			TopicPartition: kafkaPartition,
+			Value:          compressed,
+		}, nil)
 
-		reqBuf, err := snappy.Decode(nil, compressed)
-		if err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			logrus.WithError(err).Error("couldn't decompress body")
-			return
-		}
-
-		var req prompb.WriteRequest
-		if err := proto.Unmarshal(reqBuf, &req); err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			logrus.WithError(err).Error("couldn't unmarshal body")
-			return
-		}
-
-		metrics, err := processWriteRequest(&req)
 		if err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
-			logrus.WithError(err).Error("couldn't process write request")
+			logrus.WithError(err).Error("couldn't produce message in kafka")
 			return
 		}
 
-		for _, metric := range metrics {
-			err := producer.Produce(&kafka.Message{
-				TopicPartition: kafkaPartition,
-				Value:          metric,
-			}, nil)
+		//
+		//reqBuf, err := snappy.Decode(nil, compressed)
+		//if err != nil {
+		//	c.AbortWithStatus(http.StatusBadRequest)
+		//	logrus.WithError(err).Error("couldn't decompress body")
+		//	return
+		//}
+		//
+		//var req prompb.WriteRequest
+		//if err := proto.Unmarshal(reqBuf, &req); err != nil {
+		//	c.AbortWithStatus(http.StatusBadRequest)
+		//	logrus.WithError(err).Error("couldn't unmarshal body")
+		//	return
+		//}
 
-			if err != nil {
-				c.AbortWithStatus(http.StatusInternalServerError)
-				logrus.WithError(err).Error("couldn't produce message in kafka")
-				return
-			}
-		}
+		//metrics, err := processWriteRequest(&req)
+		//if err != nil {
+		//	c.AbortWithStatus(http.StatusInternalServerError)
+		//	logrus.WithError(err).Error("couldn't process write request")
+		//	return
+		//}
+
+		//for _, metric := range metrics {
+		//	err := producer.Produce(&kafka.Message{
+		//		TopicPartition: kafkaPartition,
+		//		Value:          metric,
+		//	}, nil)
+		//
+		//	if err != nil {
+		//		c.AbortWithStatus(http.StatusInternalServerError)
+		//		logrus.WithError(err).Error("couldn't produce message in kafka")
+		//		return
+		//	}
+		//}
 
 	}
 }
