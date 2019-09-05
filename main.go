@@ -46,9 +46,9 @@ func main() {
 
 	r.GET("/metrics", gin.WrapH(prometheus.UninstrumentedHandler()))
 
-	if basicauth {
+	if basicAuth {
 		authorized := r.Group("/", gin.BasicAuth(gin.Accounts{
-			basicauthUsername: basicauthPassword,
+			basicAuthUsername: basicAuthPassword,
 		}))
 		authorized.POST("/receive", receiveHandler(producer, serializer))
 	} else {

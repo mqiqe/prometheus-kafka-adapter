@@ -15,18 +15,17 @@
 package main
 
 import (
-	"os"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/sirupsen/logrus"
+	"os"
 )
 
 var (
 	kafkaBrokerList   = "127.0.0.1:9092"
 	kafkaTopic        = "metrics"
-	basicauth         = false
-	basicauthUsername = ""
-	basicauthPassword = ""
+	basicAuth         = false
+	basicAuthUsername = ""
+	basicAuthPassword = ""
 	kafkaPartition    = kafka.TopicPartition{
 		Topic:     &kafkaTopic,
 		Partition: kafka.PartitionAny,
@@ -58,12 +57,12 @@ func init() {
 	}
 
 	if value := os.Getenv("BASIC_AUTH_USERNAME"); value != "" {
-		basicauth = true
-		basicauthUsername = value
+		basicAuth = true
+		basicAuthUsername = value
 	}
 
 	if value := os.Getenv("BASIC_AUTH_PASSWORD"); value != "" {
-		basicauthPassword = value
+		basicAuthPassword = value
 	}
 
 	if value := os.Getenv("KAFKA_COMPRESSION"); value != "" {
